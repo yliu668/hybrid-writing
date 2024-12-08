@@ -1,11 +1,9 @@
 import streamlit as st
-from openai import OpenAI
+import openai
 import os
 
 # Set OpenAI API key
-client = OpenAI(
-    api_key=os.environ.get("OPENAI_API_KEY"),  # This is the default and can be omitted
-)
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 st.title("🔎 Reflective Writing")
 
@@ -15,7 +13,6 @@ In this exercise, you will write a short paragraph on this topic:
 You will chat with the chatbot to help you organize your thoughts and think deeper about your experiences.
 You can ask the chatbot anything. Once you feel that you are able to get started, please write your paragraph below.
 """)
-
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -29,12 +26,11 @@ user_input = st.text_input("Your Message", placeholder="Ask me anything to organ
 
 if user_input:
     st.session_state["messages"].append({"role": "user", "content": user_input})
-    
+
     # Get the bot's response
     try:
-        # Using the updated OpenAI API structure
-        response = client.chat.completions.create(
-            model="gpt-4",  # Use "gpt-3.5-turbo" or "gpt-4" based on your preference
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
             messages=st.session_state["messages"]
         )
         bot_message = response["choices"][0]["message"]["content"]
@@ -64,5 +60,6 @@ if st.button("Submit"):
         st.success("Your reflective writing has been submitted successfully!")
     else:
         st.error("Please write something before submitting.")
+
 
 
