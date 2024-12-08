@@ -9,9 +9,10 @@ st.title("🔎 Reflective Writing")
 
 st.write("""
 In this exercise, you will write a short paragraph on this topic:
-"Reflect on a time when you questioned or challenged a belief or idea. What prompted your thinking? What was the outcome?"
+**"Reflect on a time when you questioned or challenged a belief or idea. What prompted your thinking? What was the outcome?"**
+
 You will chat with the chatbot to help you organize your thoughts and think deeper about your experiences.
-You can ask the chatbot anything. Once you feel that you are able to get started, please write your paragraph below.
+Feel free to ask the chatbot anything. Once you feel ready, you can use the notes section below to draft your thoughts.
 """)
 
 # Initialize chat history
@@ -20,44 +21,51 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "You are a helpful assistant for reflective writing exercises."}
     ]
 
-# Chatbot Interaction
-st.subheader("Chat with the Bot")
-user_input = st.text_input("Your Message", placeholder="Ask me anything to organize your thoughts...", key="input")
-
-if user_input:
-    st.session_state["messages"].append({"role": "user", "content": user_input})
-
-    # Get the bot's response
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=st.session_state["messages"]
-        )
-        bot_message = response["choices"][0]["message"]["content"]
-        st.session_state["messages"].append({"role": "assistant", "content": bot_message})
-    except openai.OpenAIError as e:
-        bot_message = f"Error: {e}"
-        st.session_state["messages"].append({"role": "assistant", "content": bot_message})
-
 # Display chat history
+st.subheader("Chat with the Bot")
 for msg in st.session_state["messages"]:
     if msg["role"] == "user":
-        st.write(f"**You:** {msg['content']}")
+        st.markdown(f"**You:** {msg['content']}")
     else:
-        st.write(f"**Bot:** {msg['content']}")
+        st.markdown(f"**Bot:** {msg['content']}")
 
-# Writing Box
-st.subheader("Reflective Writing")
-writing = st.text_area(
-    "Write your reflective paragraph here:",
-    placeholder="Start writing your reflection...",
-    height=200,
-    key="writing_area"
-)
+# User input at the bottom of the conversation flow
+st.write("---")
+input_col, send_col = st.columns([4,1])
 
-if st.button("Submit"):
-    if writing.strip():
-        st.success("Your reflective writing has been submitted successfully!")
+with input_col:
+    user_input = st.text_input("Your Message", placeholder="Ask me anything to organize your thoughts...", key="user_input")
+
+with send_col:
+    if st.button("Send"):
+        if user_input.strip():
+            # Append user message
+            st.session_state["messages"].append({"role": "user", "content": user_input})
+            # Get bot response
+            try:
+                response = openai.ChatCompletion.create(
+                    model="gpt-4",
+                    messages=st.session_state["messages"]
+                )
+                bot_message = response["choices"][0]["message"]["content"]
+                st.session_state["messages"].append({"role": "assistant", "content": bot_message})
+            except openai.OpenAIError as e:
+                bot_message = f"Error: {e}"
+                st.session_state["messages"].append({"role": "assistant", "content": bot_message})
+            
+            # Clear the input after sending
+            st.session_state["user_input"] = ""
+
+# Notes Section
+st.write("---")
+st.subheader("Notes")
+st.write("Use the space below to jot down ideas or even draft your reflection. This is just for your notes; it won't be submitted anywhere.")
+notes = st.text_area("Your Notes:", placeholder="Write your thoughts here...", height=200, key="notes_area")
+
+# Submission button (if you want to implement a submission feature)
+if st.button("Submit Notes"):
+    if notes.strip():
+        st.success("Your notes have been saved (locally in session).")
     else:
         st.error("Please write something before submitting.")
 
