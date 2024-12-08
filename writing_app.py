@@ -21,6 +21,30 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "You are a helpful assistant for reflective writing exercises."}
     ]
 
+if "user_input" not in st.session_state:
+    st.session_state["user_input"] = ""
+
+# Function to handle sending message
+def send_message():
+    user_input = st.session_state.user_input
+    if user_input.strip():
+        # Append user message
+        st.session_state["messages"].append({"role": "user", "content": user_input})
+        # Get bot response
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=st.session_state["messages"]
+            )
+            bot_message = response["choices"][0]["message"]["content"]
+            st.session_state["messages"].append({"role": "assistant", "content": bot_message})
+        except openai.OpenAIError as e:
+            bot_message = f"Error: {e}"
+            st.session_state["messages"].append({"role": "assistant", "content": bot_message})
+
+    # Reset user input
+    st.session_state.user_input = ""
+
 # Display chat history
 st.subheader("Chat with the Bot")
 for msg in st.session_state["messages"]:
@@ -29,32 +53,13 @@ for msg in st.session_state["messages"]:
     else:
         st.markdown(f"**Bot:** {msg['content']}")
 
-# User input at the bottom of the conversation flow
 st.write("---")
-input_col, send_col = st.columns([4,1])
-
-with input_col:
-    user_input = st.text_input("Your Message", placeholder="Ask me anything to organize your thoughts...", key="user_input")
-
-with send_col:
-    if st.button("Send"):
-        if user_input.strip():
-            # Append user message
-            st.session_state["messages"].append({"role": "user", "content": user_input})
-            # Get bot response
-            try:
-                response = openai.ChatCompletion.create(
-                    model="gpt-4",
-                    messages=st.session_state["messages"]
-                )
-                bot_message = response["choices"][0]["message"]["content"]
-                st.session_state["messages"].append({"role": "assistant", "content": bot_message})
-            except openai.OpenAIError as e:
-                bot_message = f"Error: {e}"
-                st.session_state["messages"].append({"role": "assistant", "content": bot_message})
-            
-            # Clear the input after sending
-            st.session_state["user_input"] = ""
+st.text_input(
+    "Your Message",
+    placeholder="Ask me anything to organize your thoughts...",
+    key="user_input"
+)
+st.button("Send", on_click=send_message)
 
 # Notes Section
 st.write("---")
@@ -62,7 +67,6 @@ st.subheader("Notes")
 st.write("Use the space below to jot down ideas or even draft your reflection. This is just for your notes; it won't be submitted anywhere.")
 notes = st.text_area("Your Notes:", placeholder="Write your thoughts here...", height=200, key="notes_area")
 
-# Submission button (if you want to implement a submission feature)
 if st.button("Submit Notes"):
     if notes.strip():
         st.success("Your notes have been saved (locally in session).")
