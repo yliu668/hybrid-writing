@@ -1,9 +1,11 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 import os
 
 # Set OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(
+    api_key=os.environ.get("OPENAI_API_KEY"),  # This is the default and can be omitted
+)
 
 st.title("🔎 Reflective Writing")
 
@@ -14,12 +16,6 @@ You will chat with the chatbot to help you organize your thoughts and think deep
 You can ask the chatbot anything. Once you feel that you are able to get started, please write your paragraph below.
 """)
 
-# Sidebar for API Key (Optional, for local testing)
-with st.sidebar:
-    st.header("🔑 API Key")
-    api_key = st.text_input("Enter OpenAI API Key", type="password")
-    if api_key:
-        openai.api_key = api_key
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -37,7 +33,7 @@ if user_input:
     # Get the bot's response
     try:
         # Using the updated OpenAI API structure
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4",  # Use "gpt-3.5-turbo" or "gpt-4" based on your preference
             messages=st.session_state["messages"]
         )
