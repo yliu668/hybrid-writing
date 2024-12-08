@@ -2,24 +2,30 @@ import streamlit as st
 import openai
 import os
 
-from langchain.agents import initialize_agent, AgentType
-from langchain.callbacks import StreamlitCallbackHandler
-from langchain.chat_models import ChatOpenAI
-from langchain.tools import DuckDuckGoSearchRun
-
 # Set OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 st.title("🔎 Reflective Writing")
 
-"""
+st.write("""
 In this exercise, you will write a short paragraph on this topic:
 "Reflect on a time when you questioned or challenged a belief or idea. What prompted your thinking? What was the outcome?"
-
 You will chat with the chatbot to help you organize your thoughts and think deeper about your experiences.
+You can ask the chatbot anything. Once you feel that you are able to get started, please write your paragraph below.
+""")
 
-You can ask the chatbot anything. Once you feel that you are able to get started, please click the "continue" button.
-"""
+# Sidebar for API Key (Optional, for local testing)
+with st.sidebar:
+    st.header("🔑 API Key")
+    api_key = st.text_input("Enter OpenAI API Key", type="password")
+    if api_key:
+        openai.api_key = api_key
+
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state["messages"] = [
+        {"role": "system", "content": "You are a helpful assistant for reflective writing exercises."}
+    ]
 
 # Chatbot Interaction
 st.subheader("Chat with the Bot")
@@ -30,14 +36,14 @@ if user_input:
     
     # Get the bot's response
     try:
-        # Using the new OpenAI client call
+        # Using the updated OpenAI API structure
         response = openai.ChatCompletion.create(
             model="gpt-4",  # Use "gpt-3.5-turbo" or "gpt-4" based on your preference
             messages=st.session_state["messages"]
         )
         bot_message = response["choices"][0]["message"]["content"]
         st.session_state["messages"].append({"role": "assistant", "content": bot_message})
-    except Exception as e:
+    except openai.error.OpenAIError as e:
         bot_message = f"Error: {e}"
         st.session_state["messages"].append({"role": "assistant", "content": bot_message})
 
@@ -62,4 +68,5 @@ if st.button("Submit"):
         st.success("Your reflective writing has been submitted successfully!")
     else:
         st.error("Please write something before submitting.")
+
 
