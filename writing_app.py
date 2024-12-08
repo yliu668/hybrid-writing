@@ -43,7 +43,7 @@ if user_input:
         )
         bot_message = response["choices"][0]["message"]["content"]
         st.session_state["messages"].append({"role": "assistant", "content": bot_message})
-    except openai.error.OpenAIError as e:
+    except openai.OpenAIError as e:
         bot_message = f"Error: {e}"
         st.session_state["messages"].append({"role": "assistant", "content": bot_message})
 
