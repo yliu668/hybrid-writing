@@ -18,7 +18,7 @@ Feel free to ask the chatbot anything. Once you feel ready, you can use the note
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state["messages"] = [
-        {"role": "system", "content": "You are a helpful assistant for reflective writing exercises."}
+        {"role": "system", "content": "You are a helpful assistant for reflective writing exercises. Only provide hints. Do provide provide full paragraphs"}
     ]
 
 if "user_input" not in st.session_state:
@@ -64,7 +64,7 @@ st.button("Send", on_click=send_message)
 # Notes Section
 st.write("---")
 st.subheader("Notes")
-st.write("Use the space below to jot down ideas or even draft your reflection. This is just for your notes; it won't be submitted anywhere.")
+st.write("Use the space below to jot down ideas or even draft your reflection. This is just for your notes")
 notes = st.text_area("Your Notes:", placeholder="Write your thoughts here...", height=200, key="notes_area")
 
 if st.button("Submit Notes"):
